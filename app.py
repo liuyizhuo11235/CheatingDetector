@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # 从环境变量获取API密钥，如果没有则使用默认值
-api_key = os.getenv("OPENAI_API_KEY", "")
+api_key = os.getenv("OPENAI_API_KEY", "你的API")
 api_base = "https://api.openai.com/v1"
 
 # 创建OpenAI客户端
