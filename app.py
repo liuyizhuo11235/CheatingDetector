@@ -11,6 +11,9 @@ import httpx
 import base64
 from werkzeug.utils import secure_filename
 import tempfile
+import pdfplumber
+import docx
+# import textract  # 如需支持doc，可解开注释
 
 # 加载环境变量
 load_dotenv()
@@ -42,6 +45,25 @@ client = OpenAI(
 # 存储所有对话的字典
 conversations = {}
 
+def extract_text_from_pdf(file_path):
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            return '\n'.join(page.extract_text() or '' for page in pdf.pages)
+    except Exception as e:
+        return '[PDF解析失败]'
+
+def extract_text_from_docx(file_path):
+    try:
+        doc = docx.Document(file_path)
+        return '\n'.join([para.text for para in doc.paragraphs])
+    except Exception as e:
+        return '[DOCX解析失败]'
+
+# def extract_text_from_doc(file_path):
+#     # 预留API Key或调用方式
+#     # return textract.process(file_path).decode('utf-8')
+#     return '[DOC解析功能待接入API]'
+
 def process_files(files):
     """
     处理上传的文件，返回多模态内容列表（图片:image_url，文本:text）
@@ -50,9 +72,10 @@ def process_files(files):
     for file in files:
         if file.filename == '':
             continue
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[-1]) as temp_file:
             file.save(temp_file.name)
-            temp_file.close()  # 关键：确保文件句柄关闭，兼容Windows
+            temp_file.close()
+            ext = os.path.splitext(file.filename)[-1].lower()
             if file.content_type.startswith('image/'):
                 with open(temp_file.name, 'rb') as img_file:
                     img_data = base64.b64encode(img_file.read()).decode('utf-8')
@@ -60,7 +83,7 @@ def process_files(files):
                         'type': 'image_url',
                         'image_url': {'url': f'data:{file.content_type};base64,{img_data}'}
                     })
-            else:
+            elif file.content_type == 'text/plain':
                 try:
                     with open(temp_file.name, 'r', encoding='utf-8') as text_file:
                         content = text_file.read()
@@ -69,7 +92,18 @@ def process_files(files):
                             'text': content
                         })
                 except Exception:
-                    pass
+                    file_contents.append({'type': 'text', 'text': '[文本文件解析失败]'})
+            elif ext == '.pdf':
+                text = extract_text_from_pdf(temp_file.name)
+                file_contents.append({'type': 'text', 'text': text})
+            elif ext == '.docx':
+                text = extract_text_from_docx(temp_file.name)
+                file_contents.append({'type': 'text', 'text': text})
+            elif ext == '.doc':
+                # text = extract_text_from_doc(temp_file.name)
+                file_contents.append({'type': 'text', 'text': '[DOC解析功能待接入API]'})
+            else:
+                file_contents.append({'type': 'text', 'text': f'[暂不支持的文件类型: {file.filename}]'})
             os.unlink(temp_file.name)
     return file_contents
 

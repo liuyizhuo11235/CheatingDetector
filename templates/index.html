@@ -17,10 +17,10 @@
         <div class="sidebar">
             <div class="logo-container">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
-                <h1>学术诚信检测助手</h1>
+                <h1>Academic Integrity Detection Assistant</h1>
             </div>
             <button id="new-chat-btn" class="new-chat-btn">
-                <i class="fas fa-plus"></i> 新建对话
+                <i class="fas fa-plus"></i> New Conversation
             </button>
             <div class="conversation-list" id="conversation-list">
                 <!-- 对话列表将通过JavaScript动态加载 -->
@@ -46,7 +46,7 @@
                             <input type="file" id="file-upload" accept=".txt,.doc,.docx,.pdf" multiple hidden>
                         </label>
                     </div>
-                    <textarea id="user-input" placeholder="请输入需要检测的内容..." rows="1"></textarea>
+                    <textarea id="user-input" placeholder="Please enter the content to be checked..." rows="1"></textarea>
                     <button id="send-btn" class="send-btn">
                         <i class="fas fa-paper-plane"></i>
                     </button>

@@ -214,23 +214,22 @@ function removeFile(fileId) {
 // 发送消息
 async function sendMessage() {
     const message = userInput.value.trim();
-    
     if (!message && uploadedFiles.size === 0) return;
-    
     if (!currentConversationId) {
         await createNewConversation();
     }
 
     // 构造多模态内容
     let userContentArray = [];
+    const fileReadPromises = [];
+
     if (message) {
         userContentArray.push({ type: 'text', text: message });
     }
-    // 处理图片文件
-    const imagePromises = [];
+
     uploadedFiles.forEach((file, fileId) => {
         if (file.type.startsWith('image/')) {
-            imagePromises.push(new Promise((resolve) => {
+            fileReadPromises.push(new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     userContentArray.push({
@@ -241,10 +240,16 @@ async function sendMessage() {
                 };
                 reader.readAsDataURL(file);
             }));
+        } else {
+            // 其它类型（如txt、pdf等）只显示文件名和图标
+            userContentArray.push({
+                type: 'file',
+                name: file.name
+            });
         }
     });
-    // 等待所有图片转base64后再渲染用户气泡
-    await Promise.all(imagePromises);
+
+    await Promise.all(fileReadPromises);
     if (userContentArray.length > 0) {
         appendMessage('user', userContentArray, false);
     }
@@ -279,25 +284,24 @@ async function sendMessage() {
     }
 }
 
-// 添加消息到聊天区域
+// 修改appendMessage，支持file类型的渲染
 function appendMessage(role, content, isHistory = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${role}`;
-    
+
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
     avatar.textContent = role === 'user' ? 'U' : 'A';
-    
+
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
-    
+
     if (role === 'user') {
-        // 支持多模态：content 可能是字符串，也可能是数组
         if (Array.isArray(content)) {
             content.forEach(item => {
                 if (item.type === 'text') {
                     const p = document.createElement('div');
-                    p.textContent = item.text.length > 300 ? item.text.slice(0, 300) + '...' : item.text;
+                    p.textContent = item.text;
                     messageContent.appendChild(p);
                 } else if (item.type === 'image_url' && item.image_url && item.image_url.url) {
                     const img = document.createElement('img');
@@ -308,6 +312,21 @@ function appendMessage(role, content, isHistory = false) {
                     img.style.margin = '8px 0';
                     img.style.borderRadius = '8px';
                     messageContent.appendChild(img);
+                } else if (item.type === 'file' && item.name) {
+                    const fileDiv = document.createElement('div');
+                    fileDiv.style.display = 'flex';
+                    fileDiv.style.alignItems = 'center';
+                    fileDiv.style.margin = '8px 0';
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-file-alt';
+                    icon.style.color = '#2196f3';
+                    icon.style.fontSize = '18px';
+                    icon.style.marginRight = '8px';
+                    fileDiv.appendChild(icon);
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = item.name;
+                    fileDiv.appendChild(nameSpan);
+                    messageContent.appendChild(fileDiv);
                 }
             });
         } else if (typeof content === 'string') {
@@ -322,7 +341,7 @@ function appendMessage(role, content, isHistory = false) {
             hljs.highlightBlock(block);
         });
     }
-    
+
     messageDiv.appendChild(avatar);
     messageDiv.appendChild(messageContent);
     chatMessages.appendChild(messageDiv);
