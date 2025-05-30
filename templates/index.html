@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学术诚信检测助手</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 添加 Markdown 样式 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css">
+    <!-- 添加代码高亮样式 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+                <h1>学术诚信检测助手</h1>
+            </div>
+            <button id="new-chat-btn" class="new-chat-btn">
+                <i class="fas fa-plus"></i> 新建对话
+            </button>
+            <div class="conversation-list" id="conversation-list">
+                <!-- 对话列表将通过JavaScript动态加载 -->
+            </div>
+        </div>
+
+        <!-- 主聊天区域 -->
+        <div class="main-chat-wrapper">
+            <div class="chat-container">
+                <div class="chat-messages markdown-body" id="chat-messages">
+                    <!-- 消息将通过JavaScript动态加载 -->
+                </div>
+            </div>
+            <div class="input-container">
+                <div class="input-row">
+                    <div class="upload-buttons">
+                        <label for="image-upload" class="upload-btn">
+                            <i class="fas fa-image"></i>
+                            <input type="file" id="image-upload" accept="image/*" multiple hidden>
+                        </label>
+                        <label for="file-upload" class="upload-btn">
+                            <i class="fas fa-file"></i>
+                            <input type="file" id="file-upload" accept=".txt,.doc,.docx,.pdf" multiple hidden>
+                        </label>
+                    </div>
+                    <textarea id="user-input" placeholder="请输入需要检测的内容..." rows="1"></textarea>
+                    <button id="send-btn" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="preview-container" id="preview-container">
+                    <!-- 文件预览将在这里显示 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加 Markdown 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 添加代码高亮库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html> 
